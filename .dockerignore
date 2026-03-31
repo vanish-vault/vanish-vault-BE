@@ -1,0 +1,16 @@
+# ─────────────────────────────────────────────
+# .dockerignore  –  keeps the image lean
+# ─────────────────────────────────────────────
+node_modules
+dist
+.env
+.env.*
+*.log
+tsc_output*.txt
+tmp_create_db.*
+cleanup_temp.js
+.DS_Store
+.git
+.gitignore
+README.md
+seed.log

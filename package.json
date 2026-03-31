@@ -1,0 +1,53 @@
+{
+  "name": "Vanish-Vault-BE",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "seed": "ts-node src/config/seeders/plan.seed.ts",
+    "typeorm": "ts-node -r dotenv/config ./node_modules/typeorm/cli.js",
+    "migration:generate": "npm run typeorm -- migration:generate -d src/config/data-source.ts",
+    "migration:run": "npm run typeorm -- migration:run -d src/config/data-source.ts",
+    "migration:run:prod": "node -r dotenv/config ./node_modules/typeorm/cli.js migration:run -d dist/config/data-source.js",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/data-source.ts",
+    "seed:prod": "node -r dotenv/config dist/config/seeders/plan.seed.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1007.0",
+    "@aws-sdk/s3-request-presigner": "^3.1007.0",
+    "@types/bun": "^1.3.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "argon2": "^0.44.0",
+    "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-oas-generator": "^1.0.48",
+    "google-auth-library": "^10.5.0",
+    "helmet": "^8.1.0",
+    "is-ip": "^5.0.1",
+    "jest": "^30.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.18.0",
+    "razorpay": "^2.9.6",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.28",
+    "typescript": "^5.9.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0"
+  }
+}

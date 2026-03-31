@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.env.*
+*.log
+tsc_output.txt
+tsc_output_utf8.txt
+tmp_create_db.ts
+tmp_create_db.js
+cleanup_temp.js
+.DS_Store
