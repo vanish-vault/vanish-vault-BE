@@ -4,8 +4,6 @@ import * as Entities from "../entities/";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// Railway (and most cloud PaaS) inject a DATABASE_URL.
-// Fall back to individual vars for local development.
 const baseOptions: DataSourceOptions = process.env.DATABASE_URL
   ? {
       type: "postgres",
@@ -36,9 +34,7 @@ export const AppDataSource = new DataSource({
     Entities.Webhook,
   ],
   migrations: [
-    isProduction
-      ? "dist/config/migrations/*.js"
-      : "src/config/migrations/*.ts",
+    isProduction ? "dist/config/migrations/*.js" : "src/config/migrations/*.ts",
   ],
   subscribers: [],
 });
