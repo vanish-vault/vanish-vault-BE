@@ -15,7 +15,7 @@ export class Account extends Base {
   @ManyToOne(() => User, (user) => user.accounts, {
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "userId" })
+  @JoinColumn({ name: "user_id" })
   user!: User;
 
   @Column({ nullable: true, name: "access_token" })

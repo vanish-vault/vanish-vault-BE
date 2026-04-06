@@ -92,43 +92,53 @@ export const findOrCreateUserWithGoogle = async (payload: {
   picture?: string;
 }) => {
   const { googleId, username, email, name, picture } = payload;
-  const userRepo = AppDataSource.getRepository(User);
-  const accountRepo = AppDataSource.getRepository(Account);
   const queryRunner = AppDataSource.createQueryRunner();
 
   await queryRunner.connect();
   await queryRunner.startTransaction();
 
   try {
-    // Check if Google account already exists
+    // 1. Check if Google account already exists
     let account = await queryRunner.manager.findOne(Account, {
       where: { accountId: googleId, providerId: "google" },
-      relations: ["user"],
+      relations: ["user", "user.plan"],
     });
 
     if (account) {
+      // Logic for existing user with this google account
       await queryRunner.commitTransaction();
       return { user: account.user, account, isNew: false };
     }
 
-    // Check if user exists by email or username (to prevent duplicates)
+    // 2. Check if user already exists by email (regardless of provider)
     let user = await queryRunner.manager.findOne(User, {
-      where: [{ email }, { username: username }],
+      where: { email },
+      relations: ["plan"],
     });
 
     if (!user) {
-      // Create new user
+      // 3. Find the default Free plan
+      const freePlan = await queryRunner.manager.findOne(Plan, {
+        where: { price: 0 },
+      });
+
+      if (!freePlan) {
+        throw new Error("Default Free plan not found in database.");
+      }
+
+      // 4. Create new user
       user = queryRunner.manager.create(User, {
         name,
         username,
         email,
         image: picture,
         emailVerified: true,
+        plan: freePlan,
       });
       await queryRunner.manager.save(user);
     }
 
-    // Create Google account linked to user
+    // 5. Create and link Google account to the user
     account = queryRunner.manager.create(Account, {
       accountId: googleId,
       providerId: "google",
@@ -140,8 +150,16 @@ export const findOrCreateUserWithGoogle = async (payload: {
 
     await queryRunner.commitTransaction();
     return { user, account, isNew: true };
-  } catch (err) {
-    await queryRunner.rollbackTransaction();
+  } catch (err: any) {
+    if (queryRunner.isTransactionActive) {
+      await queryRunner.rollbackTransaction();
+    }
+    // Handle potential double-save/race condition if it wasn't caught by the findOne checks
+    if (err.code === "23505") {
+      // If we hit a unique constraint (likely email or username),
+      // we could retry or just let the client try again as it's a rare race condition.
+      // For now, let's re-throw with a more friendly message if needed, or just standard.
+    }
     throw err;
   } finally {
     await queryRunner.release();
