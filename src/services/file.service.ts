@@ -3,13 +3,7 @@ import * as fileRepository from "../repositories/file.repository";
 import { findUserById } from "../repositories/user.repository";
 import { getCurrentMonthYear } from "../libs/date";
 
-class HttpError extends Error {
-  statusCode: number;
-  constructor(message: string, statusCode: number) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { HttpError } from "../libs/errors";
 
 export const createTempSignedUrl = async (
   userId: string,
@@ -42,7 +36,7 @@ export const createTempSignedUrl = async (
 
     const result = await s3Utils.createSignedUrl(key, contentType);
     if (!result) {
-      throw new Error("Failed to create signed URL");
+      throw new HttpError("Failed to create signed URL", 500);
     }
 
     const file = await fileRepository.insertFile({

@@ -14,18 +14,19 @@ import {
 } from "../utils/jwt";
 import { RegisterDTO } from "../validations/auth.validation";
 import * as planRepository from "../repositories/plan.repository";
+import { HttpError } from "../libs/errors";
 
 export const register = async (payload: RegisterDTO) => {
   const { username, email, password } = payload;
 
   const existingEmail = await findUserByEmail(email.toLowerCase());
-  if (existingEmail) throw new Error("Email already in use");
+  if (existingEmail) throw new HttpError("Email already in use", 409);
 
   const existingUsername = await findUserByUsername(username.toLowerCase());
-  if (existingUsername) throw new Error("Username already in use");
+  if (existingUsername) throw new HttpError("Username already in use", 409);
 
   const freePlan = await planRepository.getFreePlan();
-  if (!freePlan) throw new Error("Free plan not found");
+  if (!freePlan) throw new HttpError("Free plan not found", 404);
 
   const { user } = await createUserWithLocalAccount({
     username: username.toLowerCase(),
@@ -46,10 +47,10 @@ export const register = async (payload: RegisterDTO) => {
 
 export const login = async (identifier: string, password: string) => {
   const account = await findLocalAccountByUsernameOrEmail(identifier);
-  if (!account) throw new Error("Invalid credentials");
+  if (!account) throw new HttpError("Invalid credentials", 401);
 
   const ok = await compare(password, account.password || "");
-  if (!ok) throw new Error("Invalid credentials");
+  if (!ok) throw new HttpError("Invalid credentials", 401);
 
   const accessToken = generateAccessToken(account.user.id);
   const refreshToken = generateRefreshToken(account.user.id);
@@ -94,7 +95,7 @@ export const loginWithGoogle = async (idToken: string) => {
     });
 
     const payload = ticket.getPayload();
-    if (!payload) throw new Error("Invalid Google token");
+    if (!payload) throw new HttpError("Invalid Google token", 401);
 
     const { sub: googleId, email, name, picture } = payload;
 
