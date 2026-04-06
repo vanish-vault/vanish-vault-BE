@@ -29,8 +29,8 @@ export const errorHandler = (
     return errorResponse(
       res,
       err.message || "Error",
-      err.details || null,
       err.statusCode,
+      err.details || null,
     );
   }
 

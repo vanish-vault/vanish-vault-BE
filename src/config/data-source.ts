@@ -1,15 +1,28 @@
 import "reflect-metadata";
-import { DataSource } from "typeorm";
+import { DataSource, DataSourceOptions } from "typeorm";
 import * as Entities from "../entities/";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const baseOptions: DataSourceOptions = process.env.DATABASE_URL
+  ? {
+      type: "postgres",
+      url: process.env.DATABASE_URL,
+      // Railway's managed Postgres requires SSL
+      ssl: isProduction ? { rejectUnauthorized: false } : false,
+    }
+  : {
+      type: "postgres",
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+    };
+
 export const AppDataSource = new DataSource({
-  type: "postgres",
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  synchronize: false, // Set to false to use migrations
+  ...baseOptions,
+  synchronize: false, // use migrations, never auto-sync in production
   logging: false,
   entities: [
     Entities.User,
@@ -21,9 +34,7 @@ export const AppDataSource = new DataSource({
     Entities.Webhook,
   ],
   migrations: [
-    process.env.NODE_ENV === "production"
-      ? "dist/config/migrations/*.js"
-      : "src/config/migrations/*.ts",
+    isProduction ? "dist/config/migrations/*.js" : "src/config/migrations/*.ts",
   ],
   subscribers: [],
 });

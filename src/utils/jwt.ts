@@ -1,4 +1,5 @@
 import jwt, { SignOptions } from "jsonwebtoken";
+import { HttpError } from "../libs/errors";
 
 export const generateAccessToken = (userId: string) => {
   try {
@@ -34,7 +35,7 @@ export const verifyAccessToken = (token: string) => {
   try {
     return jwt.verify(token, process.env.JWT_SECRET!);
   } catch (err) {
-    throw new Error("Invalid token");
+    throw new HttpError("Invalid token", 401);
   }
 };
 
@@ -42,6 +43,6 @@ export const verifyRefreshToken = (token: string) => {
   try {
     return jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
   } catch (err: any) {
-    throw new Error(err.message);
+    throw new HttpError(err.message || "Invalid refresh token", 401);
   }
 };

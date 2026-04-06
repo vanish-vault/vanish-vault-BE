@@ -1,6 +1,6 @@
 import { AppDataSource } from "../config/data-source";
 import { User, Secret, File } from "../entities";
-import { LessThan } from "typeorm";
+import { LessThan, LessThanOrEqual } from "typeorm";
 
 export const insertSecret = async (
   user: User | null,
@@ -76,10 +76,10 @@ export const countSecretsByUserId = async (userId: string) => {
   });
 };
 
-export const findExpiredSecrets = async () => {
+export const findSecretsToCleanup = async () => {
   const secretRepo = AppDataSource.getRepository(Secret);
   return secretRepo.find({
-    where: { expiresAt: LessThan(new Date()) },
+    where: [{ expiresAt: LessThan(new Date()) }, { views: LessThanOrEqual(0) }],
     relations: ["files"],
   });
 };

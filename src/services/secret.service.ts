@@ -15,13 +15,7 @@ import {
   incrementMonthlyFileUploads,
 } from "../repositories/user.repository";
 
-class HttpError extends Error {
-  statusCode: number;
-  constructor(message: string, statusCode: number) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { HttpError } from "../libs/errors";
 
 export const createSecret = async (
   data: CreateSecretDTO & { userId: string },
@@ -35,7 +29,10 @@ export const createSecret = async (
   if (files?.length) {
     const maxFiles = user.plan.maxFiles;
     const isUnlimited = maxFiles === -1; // Pro plan seeds -1 for all unlimited fields
-    if (!isUnlimited && files.length + (user.monthlyFileUploads ?? 0) > maxFiles) {
+    if (
+      !isUnlimited &&
+      files.length + (user.monthlyFileUploads ?? 0) > maxFiles
+    ) {
       throw new HttpError("Max files exceeded", 400);
     }
     _files = await findFileByIds(files);

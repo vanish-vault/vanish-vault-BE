@@ -21,6 +21,6 @@ export class Session extends Base {
   @ManyToOne(() => User, (user) => user.sessions, {
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "userId" })
+  @JoinColumn({ name: "user_id" })
   user!: User;
 }

@@ -24,9 +24,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy package files and install production-only deps
+# Copy package files and install production-only deps + netcat for DB wait
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production && yarn cache clean
+RUN apk add --no-cache netcat-openbsd \
+    && yarn install --frozen-lockfile --production \
+    && yarn cache clean
 
 # Copy compiled output from builder stage
 COPY --from=builder /app/dist ./dist
@@ -38,5 +40,5 @@ RUN chmod +x ./entrypoint.sh
 # Expose the application port (matches PORT env var, default 4000)
 EXPOSE 4000
 
-# Runs: migrations → optional seed → server
+# Runs: wait for DB → migrations → optional seed → server
 CMD ["sh", "entrypoint.sh"]
